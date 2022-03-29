@@ -1,0 +1,28 @@
+#!/bin/dash
+
+if [ ! -d ".girt" ]; then
+
+  echo "girt-log: error: girt repository directory .girt not found"
+  exit 0
+
+fi
+
+cd .girt/commit
+
+count_directory=$(( $( ls -A | wc -l ) - 1 ))
+
+if [ $count_directory -ne -1 ]; then
+
+  for index in $(seq $count_directory -1 0); do
+
+    cd $index
+    echo "$index $(cat commit_message)"
+    cd ..
+
+  done
+
+else
+
+  echo "no exist commited files"
+
+fi

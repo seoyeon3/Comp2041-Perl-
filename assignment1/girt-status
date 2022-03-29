@@ -1,0 +1,171 @@
+#!/bin/dash
+
+if [ ! -d ".girt" ]; then
+
+  echo "girt-status: error: girt repository directory .girt not found"
+  exit 0
+
+fi
+
+file_dir=$(pwd)
+add_dir=$(pwd)/.girt/add
+
+commit_num=$(( $( ls -A $file_dir/.girt/commit | wc -l ) - 1 ))
+commit_dir=$(pwd)/.girt/commit/$commit_num
+
+commit_dir_files=$(ls "$commit_dir" )
+
+for file in $commit_dir_files; do
+
+  if [ "$file" = "commit_message" ]; then
+
+    continue
+
+  fi
+
+
+  file_status=0
+
+  if [ -f "$file_dir/$file" ]; then
+  
+    file_status=$(( file_status + 1 ))
+
+  fi
+
+  if [ -f "$add_dir/$file" ]; then
+  
+    file_status=$(( file_status + 2 ))
+
+  fi
+
+  
+  if [ $file_status -eq 0 ]; then
+
+    echo "$file - deleted"
+
+  elif [ $file_status -eq 1 ]; then
+
+    echo "$file - untracked"
+
+  elif [ $file_status -eq 2 ]; then
+
+    echo "$file - file deleted"
+
+  else
+
+    diff_status=0
+
+	diff_file_add=$(diff $file_dir/$file $add_dir/$file)
+	diff_file_commit=$(diff $file_dir/$file $commit_dir/$file)
+	diff_add_commit=$(diff $add_dir/$file $commit_dir/$file)
+
+	if [ "$diff_file_add" != "" ]; then
+	  
+	  diff_status=$(( diff_status + 1 ))
+
+	fi
+
+	if [ "$diff_file_commit" != "" ]; then
+	  
+	  diff_status=$(( diff_status + 2 ))
+
+	fi
+
+	if [ "$diff_add_commit" != "" ]; then
+	  
+	  diff_status=$(( diff_status + 4 ))
+
+	fi
+
+
+    if [ $diff_status -eq 0 ]; then
+
+	  echo "$file - same as repo"
+
+	fi
+
+    if [ $diff_status -eq 1 ]; then
+
+	  echo "$file - 1"
+
+	fi
+
+    if [ $diff_status -eq 2 ]; then
+
+	  echo "$file - 2"
+
+	fi
+
+    if [ $diff_status -eq 3 ]; then
+
+	  echo "$file - file changed, changes not staged for commit"
+
+	fi
+
+    if [ $diff_status -eq 4 ]; then
+
+	  echo "$file - 4"
+
+	fi
+
+    if [ $diff_status -eq 5 ]; then
+
+	  echo "$file - 5"
+
+	fi
+
+    if [ $diff_status -eq 6 ]; then
+
+	  echo "$file - file changed, changes staged for commit"
+
+	fi
+
+    if [ $diff_status -eq 7 ]; then
+
+	  echo "$file - file changed, different changes staged for commit"
+
+	fi
+
+  fi
+
+done
+
+cd $file_dir
+
+
+file_dir_files=$(ls ./ )
+add_dir_files=$(ls "$add_dir" )
+
+for file in $file_dir_files; do
+
+  is_exist=0
+
+  for file_check in $add_dir_files; do
+
+    if [ "$file" = "$file_check" ]; then
+
+	  is_exist=1
+	  break
+
+	fi
+  
+  done
+
+  for file_check in $commit_dir_files; do
+
+    if [ "$file" = "$file_check" ]; then
+
+	  is_exist=1
+	  break
+
+	fi
+
+  done 
+
+  if [ $is_exist -eq 0 ]; then
+
+    echo "$file - untracked"
+
+  fi
+
+done

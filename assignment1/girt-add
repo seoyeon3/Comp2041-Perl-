@@ -1,0 +1,60 @@
+#!/bin/dash
+
+is_add=0
+
+if [ ! -d ".girt" ]; then
+
+  echo "girt-add: error: girt repository directory .girt not found"
+  exit 0	
+
+else
+ 
+    if [ $# -ne 0 ]; then
+
+      for arg in "$@"; do
+
+	    if [ -f $arg ]; then
+
+          if [ -f ".girt/add/$arg" ]; then
+
+		    DIFF_ADD=$(diff $arg .girt/add/$arg)
+
+			if [ "$DIFF_ADD" != "" ]; then
+
+		      cp $arg .girt/add/$arg
+              	      is_add=1
+
+			fi
+
+          else
+
+		    cp $arg .girt/add/$arg
+            is_add=1
+
+	      fi
+
+		else
+
+                        if [ -f ".girt/add/$arg" ]; then
+                            rm .girt/add/$arg	   
+                            is_add=1
+else
+		  echo "girt-add: error: can not open 'non_existent_file'"
+fi
+		fi
+
+      done
+
+	else
+
+	  echo "need arg"
+
+    fi
+  
+fi
+
+if [ $is_add -eq 1 ]; then
+
+  echo "1" > .girt/add/is_changed
+ 
+fi

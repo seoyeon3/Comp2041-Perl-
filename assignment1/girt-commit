@@ -1,0 +1,146 @@
+#!/bin/dash
+
+if [ ! -d ".girt" ]; then
+
+  echo "girt-commit: error: girt repository directory .girt not found"
+  exit 0
+
+fi
+
+if [ $# -le 1 ]; then
+
+  echo "using method : girt-commit [-a] -m \"message\""
+  exit 0
+
+fi
+
+if [ "$1" = "-m" -a "$2" = "-m" ]; then
+
+  echo "using method : girt-commit [-a] -m \"message\""
+  exit 0
+
+fi
+
+a_option=0
+
+if [ "$1" = "-a" -o "$2" = "-a" ]; then
+
+  a_option=1
+
+  if [ $# -ne 3 ]; then
+
+    echo "using method : girt-commit [-a] -m \"message\""
+    exit 0
+
+  elif [ "$3" = "" ]; then
+
+    echo "need message"
+	exit 0
+
+  fi
+
+fi
+
+file_dir=$(pwd)
+add_dir=$(pwd)/.girt/add
+
+if [ ! -f "$add_dir/is_changed" ]; then
+
+  echo "need girt-add"
+  exit 0
+
+fi
+
+need_staged=$( cat $add_dir/is_changed )
+
+if [ $a_option -eq 0 -a $need_staged -eq 0 ]; then
+
+  echo "nothing to commit"
+  exit 0
+
+fi
+
+
+
+
+
+if [ $a_option -eq 0 ]; then
+
+  if [ $( echo $2 | cut -b 1) = "-" ]; then
+  
+    echo "doesn't start with a \'-\' char"
+	exit 0
+
+  fi
+
+  cd $file_dir/.girt/commit
+
+  count_directory=$( ls -A | wc -l )
+
+  mkdir "$count_directory"
+  cd $count_directory
+
+  cp $add_dir/* ./
+
+  echo "$2" > commit_message
+  if [ -f "is_changed" ]; then
+
+      rm is_changed
+
+  fi
+  echo '0' > $add_dir/is_changed
+
+else
+
+  if [ $( echo $3 | cut -b 1) = "-" ]; then
+  
+    echo "doesn't start with a \'-\' char"
+	exit 0
+
+  fi
+
+  cd $add_dir
+
+  file_in_add=$(ls -l)
+
+  for file in $file_in_add; do
+
+    if [ -f $file_dir/$file ]; then
+
+	  cp $file_dir/$file ./
+
+	else
+
+      if [ -f $file ]; then
+
+	    rm $file
+
+      fi
+
+	fi
+
+  done
+
+
+  cd $file_dir/.girt/commit
+
+  count_directory=$( ls -A | wc -l )
+
+  mkdir "$count_directory"
+  cd $count_directory
+
+  cp $add_dir/* ./
+
+
+  echo "$3" > commit_message
+
+  if [ -f "is_changed" ]; then
+
+    rm is_changed
+
+  fi
+  echo '0' > $add_dir/is_changed
+
+fi
+
+echo "Committed as commit $count_directory"

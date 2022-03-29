@@ -1,0 +1,70 @@
+#!/bin/dash
+
+if [ ! -d ".girt" ]; then
+
+  echo "girt-show: error: girt repository directory .girt not found"
+  exit 0
+
+fi
+
+if [ $# -eq 0 ]; then
+
+  echo "girt-show [commit]:filename"
+  exit 0
+
+fi
+
+
+file_dir=$(pwd)
+add_dir=$(pwd)/.girt/add
+commit_dir=$(pwd)/.girt/commit
+
+for arg in "$@"; do
+
+  commit_number=$(echo $arg | awk -F ':' '{ print $1 }')
+  filename=$(echo $arg | awk -F ':' '{ print $2 }')
+
+  if [ "$filename" = "" ]; then
+    
+    echo "girt-show [commit]:filename"
+
+  elif [ "$commit_number" = "" ]; then
+    
+	if [ ! -f $add_dir/$filename ]; then
+      
+      echo "girt-show: error: '$filename' not found in index"
+
+	else
+
+	  cat $add_dir/$filename
+
+	fi
+
+  else
+ 
+    cd $commit_dir
+
+    if [ -d $commit_number ]; then
+
+      cd $commit_number
+
+	  if [ -f $filename ]; then
+
+        cat $filename
+	  
+	  else
+
+	    echo "girt-show: error: '$filename' not found in commit $commit_number"
+
+	  fi
+	
+	else
+	  
+	  echo "girt-show: error: unknown commit '$commit_number'"
+
+	fi
+
+	cd $file_dir
+
+  fi
+done

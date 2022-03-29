@@ -1,0 +1,126 @@
+#!/bin/dash
+
+if [ ! -d ".girt" ]; then
+
+  echo "Need to girt initilize"
+  exit 0
+
+fi
+
+if [ $# -eq 0 ]; then
+
+#  echo "girt-rm [--force] [--cached] filenames..."
+  exit 0
+
+fi
+
+file_dir=$(pwd)
+add_dir=$(pwd)/.girt/add/
+force_option=0
+cached_option=0
+is_changed=0
+for arg in $@; do
+
+  if [ "$arg" = "--force" ]; then
+    
+	force_option=1
+
+  elif [ "$arg" = "--cached" ]; then
+
+    cached_option=1
+
+  fi
+
+done
+
+if [ $cached_option -eq 1 ]; then
+
+  cd $add_dir
+
+  for arg in $@; do
+
+    if [ "$arg" = "--force" -o "$arg" = "--cached" ]; then
+	  
+	  continue
+
+	fi
+
+    if [ -f "$arg" ]; then
+
+#      echo "remove $arg file in index"
+	  rm $arg
+          is_changed=1
+
+	else
+
+	  echo "can not find $arg"
+
+	fi
+
+  done
+
+else
+
+cd $file_dir
+
+for arg in $@; do
+
+  if [ "$arg" = "--force" -o "$arg" = "--cached" ]; then
+    	  
+    continue
+
+  fi
+  
+  if [ -f "$arg" ]; then
+
+    if [ $force_option -eq 0 ]; then
+
+      if [ -f "$add_dir/$arg" ]; then
+
+	    #DIFF_ARG= $(diff "$arg" "$add_dir/$arg")
+
+		if [ "$(diff $arg $add_dir/$arg)" != "" ]; then
+		
+		 # echo "girt-rm: error: '$arg' in the repository is different to the working file"i
+		  echo "girt-rm: error: '$arg' in index is different to both to the working file and the repository"
+		  continue
+
+		fi
+
+      fi
+
+	fi
+
+         echo "girt-rm: error: '$arg' is not in the girt repository"    
+         #  echo "girt-rm: error: '$arg' has staged changes in the index"
+
+          continue
+
+	if [ $cached_option -eq 0 ]; then
+
+#    echo "remove $arg file in index"
+    rm $arg
+
+      if [ -f "$add_dir/$arg" ]; then
+
+	    rm $add_dir/$arg
+            is_changed=1
+
+      fi
+
+	fi
+
+  else
+	
+    echo "can not find $arg"
+
+  fi
+
+done
+
+fi
+
+if [ $is_changed -eq 1 ]; then
+    echo "1" > $add_dir/is_changed
+fi
+
