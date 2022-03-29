@@ -1,0 +1,3 @@
+#!/bin/dash
+
+tac .girt/index/commits

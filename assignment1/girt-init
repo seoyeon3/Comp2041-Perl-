@@ -1,0 +1,13 @@
+#!/bin/dash
+
+if [ ! -d .girt ]; then
+    mkdir .girt
+    echo "Initialized empty girt repository in .girt"
+else
+    echo "girt-init: error: .girt already exists"
+fi
+
+if [ ! -d .girt/index ]; then
+    mkdir .girt/index
+    touch .girt/index/commits
+fi
