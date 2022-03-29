@@ -1,0 +1,32 @@
+#!/bin/dash
+
+change=0
+commit_message=$2
+commit_number=$(wc -l .girt/index/commits | sed 's/ //g'| cut -d'.' -f1)
+
+for file in $(ls .girt/index); do
+    if [ -f .girt/index/$file/change ]; then
+        change=1
+        break
+    fi
+done
+
+#echo "change is $change"
+
+if [ $change -eq 1 ]; then
+    echo "Committed as commit $commit_number"
+    echo "$commit_number $commit_message" >> .girt/index/commits
+    for file in $(ls .girt/index); do
+        if [ -f .girt/index/$file/latest ]; then
+            cp .girt/index/$file/latest .girt/index/$file/$file.$commit_number
+        fi
+        if [ -f .girt/index/$file/change ]; then
+            cp .girt/index/$file/change .girt/index/$file/$file.$commit_number
+            mv .girt/index/$file/change .girt/index/$file/latest    
+        fi
+    done
+else
+    echo "nothing to commit"
+fi
+
+
